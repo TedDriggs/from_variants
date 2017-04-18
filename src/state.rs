@@ -1,5 +1,6 @@
 pub trait State { }
 
+#[allow(dead_code)]
 pub enum Parsing { }
 
 impl State for Parsing { }

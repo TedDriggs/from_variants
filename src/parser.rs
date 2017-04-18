@@ -6,20 +6,23 @@ use errors::*;
 use bindings::Bindings;
 use from_impl::FromImpl;
 use state::*;
+use util::AsWord;
 
 pub struct Context<S: State> {
     pub bindings: Bindings,
     pub target_ident: syn::Ident,
+    generics: syn::Generics,
     type_mapping: Vec<TypeMapping>,
     state: PhantomData<S>,
 }
 
 impl Context<Parsing> {
     /// Creates a new parsing context using default bindings.
-    pub fn new(target: syn::Ident) -> Self {
+    pub fn new(target: syn::Ident, generics: syn::Generics) -> Self {
         Context {
             bindings: Default::default(),
             target_ident: target,
+            generics: generics,
             type_mapping: vec![],
             state: PhantomData,
         }
@@ -49,16 +52,13 @@ impl Context<Parsing> {
     }
     
     fn parse_meta_item(&mut self, nested: &syn::NestedMetaItem) -> Result<&mut Self> {
-        use syn::{NestedMetaItem, MetaItem};
-        match *nested {
-            NestedMetaItem::MetaItem(MetaItem::Word(ref ident)) => match ident.as_ref() {
-                "no_std" => {
-                    self.bindings = Bindings::NoStd;
-                    Ok(self)
-                },
-                wd => bail!("Unknown attribute word `{}`", wd)
+        match nested.as_word() {
+            Some("no_std") => {
+                self.bindings = Bindings::NoStd;
+                Ok(self)
             },
-            ref n => bail!("Unsupported attribute `{:?}`", n)
+            Some(wd) => bail!("Unknown attribute word `{}`", wd),
+            None => bail!("Unknown attribute `{:?}`", nested),
         }
     }
     
@@ -83,6 +83,7 @@ impl Context<Parsing> {
     pub fn finish(&self) -> Context<Generating> {
         Context {
             bindings: self.bindings.clone(),
+            generics: self.generics.clone(),
             target_ident: self.target_ident.clone(),
             type_mapping: self.type_mapping.clone(),
             state: PhantomData,
@@ -96,11 +97,17 @@ impl Context<Generating> {
         self.type_mapping.iter().map(|item| {
             FromImpl {
                 bindings: self.bindings.clone(),
+                generics: &self.generics,
                 variant_ident: &item.variant,
                 variant_ty: &item.source,
                 target_ident: &self.target_ident,
             }
         }).collect()
+    }
+    
+    pub fn parse(input: syn::DeriveInput) -> Result<Self> {
+        let mut ctx = Context::new(input.ident, input.generics);
+        Ok(ctx.parse_attributes(input.attrs)?.parse_body(input.body)?.finish())
     }
 }
 
@@ -127,12 +134,40 @@ impl TypeMapping {
     /// 1. Struct variants are not supported.
     pub fn parse(variant: syn::Variant) -> Result<Option<Self>> {
         use syn::VariantData;
+        
+        if !Self::parse_attributes(variant.attrs) {
+            return Ok(None);
+        }
+        
         match variant.data {
             VariantData::Unit => Ok(None),
             VariantData::Struct(_) => bail!(ErrorKind::StructVariantsUnsupported),
             VariantData::Tuple(fields) => {
                 Ok(Some(TypeMapping::new(Self::parse_source_ty(fields)?, variant.ident)))
             }
+        }
+    }
+    
+    fn parse_attributes(attributes: Vec<syn::Attribute>) -> bool {
+        for attr in attributes {
+            if attr.name() == "from_variants" && attr.style == syn::AttrStyle::Outer {
+                if let syn::MetaItem::List(ref _ident, ref nested_attrs) = attr.value {
+                    for item in nested_attrs {
+                        return Self::parse_meta_item(item).unwrap();
+                    }
+                } else {
+                    panic!("Expected MetaItem::List, found `{:?}`", attr.value);
+                }
+            }
+        }
+        
+        return true;
+    }
+    
+    fn parse_meta_item(item: &syn::NestedMetaItem) -> Result<bool> {
+        match item.as_word() {
+            Some("skip") => Ok(false),
+            _ => bail!("Unknown option: `{:?}`", item)
         }
     }
     

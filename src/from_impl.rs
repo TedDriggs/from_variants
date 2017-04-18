@@ -6,6 +6,7 @@ use prelude::Bindings;
 #[derive(Debug, Clone)]
 pub struct FromImpl<'a> {
     pub bindings: Bindings,
+    pub generics: &'a syn::Generics,
     pub target_ident: &'a syn::Ident,
     pub variant_ident: &'a syn::Ident,
     pub variant_ty: &'a syn::Ty,
@@ -14,12 +15,16 @@ pub struct FromImpl<'a> {
 impl<'a> ToTokens for FromImpl<'a> {
     fn to_tokens(&self, tokens: &mut Tokens) {
         let from_trait = self.bindings.from_trait();
+        let (impl_generics, ty_generics, where_clause) = self.generics.split_for_impl();
         let target_ident = &self.target_ident;
         let variant_ident = &self.variant_ident;
         let variant_ty = &self.variant_ty;
+        let doc_comment = format!(include_str!("impl_doc.md"), variant = variant_ident);
         
         tokens.append(quote!(
-            impl #from_trait<#variant_ty> for #target_ident {
+            #[doc = #doc_comment]
+            impl #impl_generics #from_trait<#variant_ty> for #target_ident #ty_generics
+                #where_clause {
                 fn from(v: #variant_ty) -> Self {
                     #target_ident::#variant_ident(v)
                 }

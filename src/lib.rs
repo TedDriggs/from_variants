@@ -14,6 +14,7 @@ mod bindings;
 mod from_impl;
 mod parser;
 mod state;
+mod util;
 
 mod prelude {
     pub use bindings::Bindings;
@@ -33,11 +34,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
 }
 
 fn build_converters(ast: syn::DeriveInput) -> Result<quote::Tokens> {
-    let target_ident = ast.ident;
-    let context = parser::Context::new(target_ident)
-        .parse_attributes(ast.attrs)?
-        .parse_body(ast.body)?
-        .finish();
+    let context = parser::Context::parse(ast)?;
     let bodies = context.as_impls();
     Ok(quote!(#(#bodies)*))
 }
