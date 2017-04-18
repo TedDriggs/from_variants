@@ -40,6 +40,7 @@ macro_rules! default_from_impl {
             use syn;
             FromImpl {
                 bindings: Default::default(),
+                generics: &Default::default(),
                 target_ident: &syn::Ident::new("Foo"),
                 variant_ident: &syn::Ident::new("Bar"),
                 variant_ty: &syn::parse_type("String").expect("default_from_impl should produce valid type"),
@@ -56,6 +57,7 @@ mod tests {
     fn simple() {
         let fi = default_from_impl!();
         assert_eq!(quote!(#fi), quote!(
+            #[doc = "Convert into a `Bar` variant."]
             impl ::std::convert::From<String> for Foo {
                 fn from(v: String) -> Self {
                     Foo::Bar(v)
