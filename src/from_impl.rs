@@ -51,6 +51,7 @@ macro_rules! default_from_impl {
 
 #[cfg(test)]
 mod tests {
+    use syn;
     use super::FromImpl;
     
     #[test]
@@ -60,6 +61,27 @@ mod tests {
             #[doc = "Convert into a `Bar` variant."]
             impl ::std::convert::From<String> for Foo {
                 fn from(v: String) -> Self {
+                    Foo::Bar(v)
+                }
+            }
+        ));
+    }
+    
+    #[test]
+    fn lifetime() {
+        let mut generics = syn::Generics::default();
+        generics.lifetimes.push(syn::LifetimeDef::new("'a"));
+        
+        let ty = syn::parse_type("&'a str").unwrap();
+        
+        let mut fi = default_from_impl!();
+        fi.variant_ty = &ty;
+        fi.generics = &generics;
+        
+        assert_eq!(quote!(#fi), quote!(
+            #[doc = "Convert into a `Bar` variant."]
+            impl<'a> ::std::convert::From<&'a str> for Foo<'a> {
+                fn from(v: &'a str) -> Self {
                     Foo::Bar(v)
                 }
             }
