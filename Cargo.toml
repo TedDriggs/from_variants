@@ -1,6 +1,6 @@
 [package]
 name = "from_variants"
-version = "0.1.0"
+version = "0.1.1-pre"
 authors = ["Ted Driggs <ted.driggs@outlook.com>"]
 repository = "https://github.com/TedDriggs/from_variants"
 documentation = "https://docs.rs/from_variants/0.1.0"
