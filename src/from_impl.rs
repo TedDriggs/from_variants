@@ -3,12 +3,22 @@ use quote::{ToTokens, Tokens};
 
 use prelude::Bindings;
 
+/// A view of data which can generate a `From<T> for Target` impl block.
 #[derive(Debug, Clone)]
 pub struct FromImpl<'a> {
+    /// The set of library bindings to generate against (core or std).
     pub bindings: Bindings,
+    
+    /// The generics of the target enum.
     pub generics: &'a syn::Generics,
+    
+    /// The identifier of the target enum.
     pub target_ident: &'a syn::Ident,
+    
+    /// The identifier of the target variant.
     pub variant_ident: &'a syn::Ident,
+    
+    /// The type of the target variant.
     pub variant_ty: &'a syn::Ty,
 }
 

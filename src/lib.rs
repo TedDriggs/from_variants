@@ -68,6 +68,7 @@ use proc_macro::TokenStream;
 use prelude::*;
 
 #[doc(hidden)]
+#[allow(missing_docs)]
 #[proc_macro_derive(FromVariants, attributes(from_variants))]
 pub fn derive(input: TokenStream) -> TokenStream {
     let ast = syn::parse_derive_input(&input.to_string()).expect("Couldn't parse item");

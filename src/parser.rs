@@ -38,6 +38,7 @@ impl Context<Generating> {
         }).collect()
     }
     
+    /// Read the input enum and generate a parsing context or return an error.
     pub fn parse(input: syn::DeriveInput) -> Result<Self> {
         let mut ctx = Context::new(input.ident, input.generics);
         Ok(ctx.parse_attributes(input.attrs)?.parse_body(input.body)?.finish())
