@@ -44,4 +44,5 @@ fn main() {
 ## Features
 
 * **Variant opt-out**: To skip a variant, add `#[from_variants(skip)]` to that variant.
-* **no_std support**: To generate conversions using `core::convert::From`, add `#[from_variants(no_std)]` at the struct level.
+* **Conversion support**: Use `#[from_variants(into)]` at the enum or variant level to get a generated conversion that accepts `Into<VariantType>`. In practice, this will only work with types defined in the same crate; otherwise you'll get conflicting impl errors.
+* **no_std support**: To generate conversions using `core::convert::From`, add `#[from_variants(no_std)]` at the enum level.

@@ -18,22 +18,24 @@ const ATTR_NAME: &'static str = "from_variants";
 /// which are responsible for the eventual rendering of the conversion implementations.
 pub struct Context<S: State> {
     pub bindings: Bindings,
+    pub into: bool,
     pub target_ident: syn::Ident,
     generics: syn::Generics,
-    type_mapping: Vec<TypeMapping>,
+    variants: Vec<Variant>,
     state: PhantomData<S>,
 }
 
 impl Context<Generating> {
     /// Generates a list of `From` implementations.
     pub fn as_impls<'a>(&'a self) -> Vec<FromImpl<'a>> {
-        self.type_mapping.iter().map(|item| {
+        self.variants.iter().filter(|v| v.is_enabled()).map(|item| {
             FromImpl {
                 bindings: self.bindings.clone(),
                 generics: &self.generics,
-                variant_ident: &item.variant,
-                variant_ty: &item.source,
+                variant_ident: &item.ident,
+                variant_ty: item.source_ty.as_ref().unwrap(),
                 target_ident: &self.target_ident,
+                into: item.into.unwrap_or(self.into),
             }
         }).collect()
     }
@@ -52,8 +54,9 @@ impl Context<Parsing> {
             bindings: Default::default(),
             target_ident: target,
             generics: generics,
-            type_mapping: vec![],
+            variants: vec![],
             state: PhantomData,
+            into: false,
         }
     }
     
@@ -85,32 +88,34 @@ impl Context<Parsing> {
     /// # Errors
     /// * Returns an error for unsupported attribute words.
     /// * Returns an error for non-word meta-items.
-    fn parse_meta_item(&mut self, nested: &syn::NestedMetaItem) -> Result<&mut Self> {
+    fn parse_meta_item(&mut self, nested: &syn::NestedMetaItem) -> Result<()> {
         match nested.as_word() {
             Some("no_std") => {
                 self.bindings = Bindings::NoStd;
-                Ok(self)
+                Ok(())
+            },
+            Some("into") => {
+                self.into = true;
+                Ok(())
             },
             Some(wd) => bail!("Unknown attribute word `{}`", wd),
             None => bail!("Unknown attribute `{:?}`", nested),
         }
     }
     
-    /// Parse the body of an enum, generating `TypeMapping` instances for
-    /// each non-skipped, non-unit variant. Returns an error if any non-skipped
-    /// variants are unsupported by the crate.
+    /// Parse the body of an enum, generating `Variant` instances for
+    /// each variant. Returns an error if any non-skipped variants aren't
+    /// supported by the crate.
     fn parse_body(&mut self, body: syn::Body) -> Result<&mut Self> {
         match body {
             syn::Body::Struct(_) => bail!(ErrorKind::StructsUnsupported),
             syn::Body::Enum(variants) => {
                 let mut impls = Vec::with_capacity(variants.len());
-                for parse_result in variants.into_iter().map(TypeMapping::parse) {
-                    if let Some(fi) = parse_result? {
-                        impls.push(fi);
-                    }
+                for parse_result in variants.into_iter().map(Variant::parse) {
+                    impls.push(parse_result?);
                 }
                 
-                self.type_mapping = impls;
+                self.variants = impls;
                 
                 Ok(self)
             }
@@ -124,71 +129,75 @@ impl Context<Parsing> {
             bindings: self.bindings.clone(),
             generics: self.generics.clone(),
             target_ident: self.target_ident.clone(),
-            type_mapping: self.type_mapping.clone(),
+            variants: self.variants.clone(),
+            into: self.into,
             state: PhantomData,
         }
     }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct TypeMapping {
-    pub source: syn::Ty,
-    pub variant: syn::Ident,
+pub struct Variant {
+    ident: syn::Ident,
+    enabled: Option<bool>,
+    into: Option<bool>,
+    source_ty: Option<syn::Ty>,
 }
 
-impl TypeMapping {
-    /// Create a new type mapping from a source type to a variant.
-    pub fn new(source: syn::Ty, variant: syn::Ident) -> Self {
-        TypeMapping {
-            source: source,
-            variant: variant,
-        }
-    }
-    
-    /// Generate a TypeMapping from a variant, if one is appropriate.
-    ///
-    /// * Passing `#[from_variants(skip)]` as an attribute will produce `None`.
-    /// * Unit variants are supported and produce `None`.
-    /// * Struct variants are not supported.
-    /// * Tuple variants are handled by `TypeMapping::parse_source_ty`.
-    pub fn parse(variant: syn::Variant) -> Result<Option<Self>> {
-        use syn::VariantData;
-        
-        if !Self::parse_attributes(variant.attrs) {
-            return Ok(None);
+impl Variant {
+    pub fn parse(variant: syn::Variant) -> Result<Self> {
+        let mut v = Variant::from(variant.ident);
+        v.parse_attributes(variant.attrs)?;
+                
+        if v.enabled == Some(false) {
+            return Ok(v);
         }
         
         match variant.data {
-            VariantData::Unit => Ok(None),
-            VariantData::Struct(_) => bail!(ErrorKind::StructVariantsUnsupported),
-            VariantData::Tuple(fields) => {
-                Ok(Some(TypeMapping::new(Self::parse_source_ty(fields)?, variant.ident)))
-            }
+            syn::VariantData::Struct(_) => bail!(ErrorKind::StructVariantsUnsupported),
+            // Unit variants don't emit conversions or errors.
+            syn::VariantData::Unit => Ok(v),
+            syn::VariantData::Tuple(fields) => {
+                v.source_ty = Some(Variant::parse_source_ty(fields)?);
+                Ok(v)
+            },
         }
+    }
+    
+    /// Check if this variant will emit a converter.
+    pub fn is_enabled(&self) -> bool {
+        self.source_ty.is_some() && self.enabled.unwrap_or(true)
     }
     
     /// Parse an individual `#[from_variants(...)]` attribute at the variant level, and 
     /// returns `true` if a TypeMapping should be generated.
-    fn parse_attributes(attributes: Vec<syn::Attribute>) -> bool {
+    fn parse_attributes(&mut self, attributes: Vec<syn::Attribute>) -> Result<()> {
         
         // TODO fix the return type of this method to adhere to others.
         for attr in attributes.into_iter().filter(is_attr_relevant) {
             if let syn::MetaItem::List(ref _ident, ref nested_attrs) = attr.value {
                 for item in nested_attrs {
-                    return Self::parse_meta_item(item).unwrap();
+                    self.parse_meta_item(item)?;
                 }
             } else {
                 // TODO switch this to use the `Result` pattern elsewhere in the library.
-                panic!("Expected MetaItem::List, found `{:?}`", attr.value);
+                bail!("Expected MetaItem::List, found `{:?}`", attr.value);
             }
         }
         
-        return true;
+        Ok(())
     }
     
-    fn parse_meta_item(item: &syn::NestedMetaItem) -> Result<bool> {
+    fn parse_meta_item(&mut self, item: &syn::NestedMetaItem) -> Result<()> {
         match item.as_word() {
-            Some("skip") => Ok(false),
+            Some("skip") => {
+                self.enabled = Some(false);
+                Ok(())
+            },
+            Some("into") => {
+                self.into = Some(true);
+                Ok(())
+            },
             _ => bail!("Unknown option: `{:?}`", item)
         }
     }
@@ -204,6 +213,17 @@ impl TypeMapping {
             1 => Ok(field_ty.next().expect("Known to have 1 field")),
             // TODO add support for tuples.
             _ => bail!(ErrorKind::TupleTooLong),
+        }
+    }
+}
+
+impl From<syn::Ident> for Variant {
+    fn from(v: syn::Ident) -> Self {
+        Variant {
+            ident: v,
+            enabled: Default::default(),
+            into: Default::default(),
+            source_ty: Default::default(),
         }
     }
 }
