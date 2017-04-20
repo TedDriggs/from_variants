@@ -22,3 +22,6 @@ quote = "0.3"
 [dependencies.error-chain]
 version = "0.10"
 default-features = false
+
+[dev-dependencies]
+pretty_assertions = "0.1"

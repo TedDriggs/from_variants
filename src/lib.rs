@@ -46,6 +46,10 @@
 #[macro_use]
 extern crate error_chain;
 
+#[cfg(test)]
+#[macro_use]
+extern crate pretty_assertions;
+
 extern crate proc_macro;
 extern crate syn;
 
