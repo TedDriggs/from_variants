@@ -19,6 +19,14 @@ impl Bindings {
             Bindings::NoStd => "::core::convert::From",
         }).expect("Static `From` trait paths should be well-formed")
     }
+    
+    /// Gets the path for the `Into` trait.
+    pub fn into_trait(&self) -> syn::Path {
+        syn::parse_path(match *self {
+            Bindings::Std => "::std::convert::Into",
+            Bindings::NoStd => "::core::convert::Into",
+        }).expect("Static `Into` trait paths should be well-formed")
+    }
 }
 
 impl Default for Bindings {
