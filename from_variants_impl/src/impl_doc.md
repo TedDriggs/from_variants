@@ -1,0 +1,1 @@
+Convert into [`{variant}`](#variant.{variant}) variant.

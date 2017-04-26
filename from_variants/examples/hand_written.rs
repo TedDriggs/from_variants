@@ -5,12 +5,14 @@ pub enum Lorem {
     Num(u16),
 }
 
+/// Convert into [`Num`](#variant.Num) variant.
 impl From<String> for Lorem {
     fn from(v: String) -> Self {
         Lorem::Str(v)
     }
 }
 
+/// Convert into [`Num`](#variant.Num) variant.
 impl From<u16> for Lorem {
     fn from(v: u16) -> Self {
         Lorem::Num(v)
@@ -22,12 +24,14 @@ pub enum Ipsum<'a, T : 'a> {
     Tbd(&'a T)
 }
 
+/// Convert into [`Str`](#variant.Str) variant.
 impl<'a, T: 'a> From<String> for Ipsum<'a, T> {
     fn from(v: String) -> Self {
         Ipsum::Str(v)
     }
 }
 
+/// Convert into [`Tbd`](#variant.Tbd) variant.
 impl<'a, T: 'a> From<&'a T> for Ipsum<'a, T> {
     fn from(v: &'a T) -> Self {
         Ipsum::Tbd(v)

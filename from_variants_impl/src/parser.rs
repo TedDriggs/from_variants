@@ -3,7 +3,6 @@ use std::marker::PhantomData;
 use syn;
 
 use errors::*;
-use bindings::Bindings;
 use from_impl::FromImpl;
 use state::*;
 use util::AsWord;
@@ -17,7 +16,6 @@ const ATTR_NAME: &'static str = "from_variants";
 /// the input to populate itself, and then generating a set of `FromImpl` objects
 /// which are responsible for the eventual rendering of the conversion implementations.
 pub struct Context<S: State> {
-    pub bindings: Bindings,
     pub into: bool,
     pub target_ident: syn::Ident,
     generics: syn::Generics,
@@ -30,7 +28,6 @@ impl Context<Generating> {
     pub fn as_impls<'a>(&'a self) -> Vec<FromImpl<'a>> {
         self.variants.iter().filter(|v| v.is_enabled()).map(|item| {
             FromImpl {
-                bindings: self.bindings.clone(),
                 generics: &self.generics,
                 variant_ident: &item.ident,
                 variant_ty: item.source_ty.as_ref().unwrap(),
@@ -51,7 +48,6 @@ impl Context<Parsing> {
     /// Creates a new parsing context using default bindings.
     fn new(target: syn::Ident, generics: syn::Generics) -> Self {
         Context {
-            bindings: Default::default(),
             target_ident: target,
             generics: generics,
             variants: vec![],
@@ -90,10 +86,6 @@ impl Context<Parsing> {
     /// * Returns an error for non-word meta-items.
     fn parse_meta_item(&mut self, nested: &syn::NestedMetaItem) -> Result<()> {
         match nested.as_word() {
-            Some("no_std") => {
-                self.bindings = Bindings::NoStd;
-                Ok(())
-            },
             Some("into") => {
                 self.into = true;
                 Ok(())
@@ -126,7 +118,6 @@ impl Context<Parsing> {
     /// a list of `From` implementations.
     fn finish(&self) -> Context<Generating> {
         Context {
-            bindings: self.bindings.clone(),
             generics: self.generics.clone(),
             target_ident: self.target_ident.clone(),
             variants: self.variants.clone(),
