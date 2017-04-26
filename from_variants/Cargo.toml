@@ -13,4 +13,4 @@ readme = "README.md"
 travis-ci = { repository = "TedDriggs/from_variants" }
 
 [dependencies]
-from_variants_impl = { path = "../from_variants_impl" }
+from_variants_impl = { version = "0.2", path = "../from_variants_impl" }
