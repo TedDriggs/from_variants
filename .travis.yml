@@ -3,3 +3,4 @@ rust:
   - stable
   - beta
   - nightly
+script: ./ci.sh
