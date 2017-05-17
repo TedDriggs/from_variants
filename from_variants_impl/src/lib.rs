@@ -1,6 +1,9 @@
 #![crate_type = "proc-macro"]
 
 #[macro_use]
+extern crate darling;
+
+#[macro_use]
 extern crate error_chain;
 
 #[cfg(test)]
@@ -16,13 +19,13 @@ extern crate quote;
 mod errors;
 mod from_impl;
 mod parser;
-mod state;
 mod util;
 
 mod prelude {
     pub use errors::{Error, ErrorKind, Result, ResultExt};
 }
 
+use darling::FromDeriveInput;
 use proc_macro::TokenStream;
 use prelude::*;
 
@@ -37,7 +40,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
 }
 
 fn build_converters(ast: syn::DeriveInput) -> Result<quote::Tokens> {
-    let context = parser::Context::parse(ast)?;
+    let context = parser::Context::from_derive_input(&ast)?;
     let bodies = context.as_impls();
     Ok(quote!(#(#bodies)*))
 }
