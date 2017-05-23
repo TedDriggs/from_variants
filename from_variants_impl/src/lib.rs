@@ -19,7 +19,6 @@ extern crate quote;
 mod errors;
 mod from_impl;
 mod parser;
-mod util;
 
 mod prelude {
     pub use errors::{Error, ErrorKind, Result, ResultExt};
