@@ -32,7 +32,7 @@ impl Container {
                 }
             }).collect()
         } else {
-            Vec::new()
+            panic!("FromVariants is not supported on structs");
         }
     }
 }
