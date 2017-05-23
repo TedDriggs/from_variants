@@ -40,7 +40,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
 }
 
 fn build_converters(ast: syn::DeriveInput) -> Result<quote::Tokens> {
-    let context = parser::Context::from_derive_input(&ast)?;
+    let context = parser::Container::from_derive_input(&ast)?;
     let bodies = context.as_impls();
     Ok(quote!(#(#bodies)*))
 }

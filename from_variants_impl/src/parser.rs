@@ -6,19 +6,19 @@ use from_impl::FromImpl;
 /// A parsing context which houses information read from the input until it
 /// can be used to construct the appropriate token stream.
 ///
-/// The `Context` is the workhorse of the macro; it is responsible for traversing
+/// The `Container` is the workhorse of the macro; it is responsible for traversing
 /// the input to populate itself, and then generating a set of `FromImpl` objects
 /// which are responsible for the eventual rendering of the conversion implementations.
 #[derive(FromDeriveInput)]
 #[darling(from_ident, attributes(from_variants))]
-pub struct Context {
+pub struct Container {
     pub into: bool,
     pub ident: syn::Ident,
     generics: syn::Generics,
     body: Body<Variant, Field>,
 }
 
-impl Context {
+impl Container {
     /// Generates a list of `From` implementations.
     pub fn as_impls<'a>(&'a self) -> Vec<FromImpl<'a>> {
         if let Some(variants) = self.body.as_ref().take_enum() {
@@ -37,9 +37,9 @@ impl Context {
     }
 }
 
-impl From<syn::Ident> for Context {
+impl From<syn::Ident> for Container {
     fn from(ident: syn::Ident) -> Self {
-        Context {
+        Container {
             ident,
             into: false,
             generics: Default::default(),
