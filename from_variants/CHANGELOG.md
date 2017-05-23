@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.2.2
+
+### Improvements
+- attempting to derive `FromVariants` on a struct now causes a compilation error instead of failing silently.
+
 ## 0.2.1 - 2017-05-17
 
 ### Internal Changes

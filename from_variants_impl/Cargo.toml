@@ -1,9 +1,9 @@
 [package]
 name = "from_variants_impl"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Ted Driggs <ted.driggs@outlook.com>"]
 repository = "https://github.com/TedDriggs/from_variants"
-documentation = "https://docs.rs/from_variants/0.2.1"
+documentation = "https://docs.rs/from_variants/0.2.2"
 license = "MIT/Apache-2.0"
 description = "Internal helper crate for from_variants crate."
 
@@ -11,7 +11,7 @@ description = "Internal helper crate for from_variants crate."
 proc-macro = true
 
 [dependencies]
-darling = "0.1.3"
+darling = "=0.1.3"
 syn = "0.11.11"
 quote = "0.3.15"
 
