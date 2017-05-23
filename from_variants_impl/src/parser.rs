@@ -1,4 +1,4 @@
-use darling::util::{Body, VariantData};
+use darling::ast::{Body, Style, VariantData};
 use syn;
 
 use from_impl::FromImpl;
@@ -10,7 +10,7 @@ use from_impl::FromImpl;
 /// the input to populate itself, and then generating a set of `FromImpl` objects
 /// which are responsible for the eventual rendering of the conversion implementations.
 #[derive(FromDeriveInput)]
-#[darling(from_ident, attributes(from_variants))]
+#[darling(from_ident, attributes(from_variants), supports(enum_any))]
 pub struct Container {
     pub into: bool,
     pub ident: syn::Ident,
@@ -72,7 +72,7 @@ impl Variant {
     }
 
     pub fn ty(&self) -> Option<&syn::Ty> {
-        if let VariantData::Tuple(ref fields) = self.data {
+        if let VariantData { style: Style::Tuple, ref fields, .. } = self.data {
             fields.get(0)
         } else {
             None
@@ -86,7 +86,10 @@ impl From<syn::Ident> for Variant {
             ident,
             skip: Default::default(),
             into: Default::default(),
-            data: VariantData::Unit,
+            data: VariantData {
+                style: Style::Unit,
+                fields: Vec::new(),
+            }
         }
     }
 }
