@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.2.3
+
+### Improvements
+- errors will now be returned all at once, rather than stopping assessment on first error.
+
 ## 0.2.2
 
 ### Improvements
