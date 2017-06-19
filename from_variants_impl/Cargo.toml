@@ -11,7 +11,7 @@ description = "Internal helper crate for from_variants crate."
 proc-macro = true
 
 [dependencies]
-darling = "=0.1.4"
+darling = "0.2.0"
 syn = "0.11.11"
 quote = "0.3.15"
 

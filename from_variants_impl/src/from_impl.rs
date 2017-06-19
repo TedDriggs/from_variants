@@ -71,7 +71,7 @@ fn generate_into_ty_param(variant_ty: &syn::Ty) -> syn::TyParam {
     }
 }
 
-
+#[cfg(test)]
 macro_rules! default_from_impl {
     () => (
         {
