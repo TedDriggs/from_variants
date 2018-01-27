@@ -1,4 +1,4 @@
-use darling::ast::{Body, Style, VariantData};
+use darling::ast::{Data, Style, Fields};
 use syn;
 
 use from_impl::FromImpl;
@@ -15,13 +15,13 @@ pub struct Container {
     pub into: bool,
     pub ident: syn::Ident,
     generics: syn::Generics,
-    body: Body<Variant, Field>,
+    data: Data<Variant, Field>,
 }
 
 impl Container {
     /// Generates a list of `From` implementations.
     pub fn as_impls<'a>(&'a self) -> Vec<FromImpl<'a>> {
-        if let Some(variants) = self.body.as_ref().take_enum() {
+        if let Some(variants) = self.data.as_ref().take_enum() {
             variants.into_iter().filter(|v| v.is_enabled()).map(|item| {
                 FromImpl {
                     generics: &self.generics,
@@ -43,7 +43,7 @@ impl From<syn::Ident> for Container {
             ident,
             into: false,
             generics: Default::default(),
-            body: Body::Enum(vec![]),
+            data: Data::Enum(vec![]),
         }
     }
 }
@@ -54,25 +54,25 @@ pub struct Variant {
     ident: syn::Ident,
     skip: Option<bool>,
     into: Option<bool>,
-    data: VariantData<syn::Ty>,
+    fields: Fields<syn::Type>,
 }
 
 impl Variant {
     fn validate(self) -> Self {
-        if self.is_enabled() && !self.data.is_newtype() {
+        if self.is_enabled() && !self.fields.is_newtype() {
             panic!("Variants must be newtype or unit");
         }
 
         self
     }
-    
+
     /// Check if this variant will emit a converter.
     pub fn is_enabled(&self) -> bool {
-        !(self.data.is_unit() || self.skip.unwrap_or(false))
+        !(self.fields.is_unit() || self.skip.unwrap_or(false))
     }
 
-    pub fn ty(&self) -> Option<&syn::Ty> {
-        if let VariantData { style: Style::Tuple, ref fields, .. } = self.data {
+    pub fn ty(&self) -> Option<&syn::Type> {
+        if let Fields { style: Style::Tuple, ref fields, .. } = self.fields {
             fields.get(0)
         } else {
             None
@@ -86,7 +86,7 @@ impl From<syn::Ident> for Variant {
             ident,
             skip: Default::default(),
             into: Default::default(),
-            data: VariantData {
+            fields: Fields {
                 style: Style::Unit,
                 fields: Vec::new(),
             }

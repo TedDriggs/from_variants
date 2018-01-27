@@ -11,6 +11,8 @@ extern crate error_chain;
 extern crate pretty_assertions;
 
 extern crate proc_macro;
+
+#[macro_use]
 extern crate syn;
 
 #[macro_use]
@@ -32,9 +34,9 @@ use prelude::*;
 #[allow(missing_docs)]
 #[proc_macro_derive(FromVariants, attributes(from_variants))]
 pub fn derive(input: TokenStream) -> TokenStream {
-    let ast = syn::parse_derive_input(&input.to_string()).expect("Couldn't parse item");
+    let ast = syn::parse(input).expect("Couldn't parse item");
     let result = build_converters(ast).unwrap().to_string();
-    
+
     result.parse().expect(&format!("Couldn't parse `{}` to tokens", result))
 }
 
