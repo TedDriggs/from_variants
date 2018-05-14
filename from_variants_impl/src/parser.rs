@@ -1,4 +1,5 @@
 use darling::ast::{Data, Style, Fields};
+use darling::util::Ignored;
 use syn;
 
 use from_impl::FromImpl;
@@ -15,7 +16,7 @@ pub struct Container {
     pub into: bool,
     pub ident: syn::Ident,
     generics: syn::Generics,
-    data: Data<Variant, Field>,
+    data: Data<Variant, Ignored>,
 }
 
 impl Container {
@@ -93,6 +94,3 @@ impl From<syn::Ident> for Variant {
         }
     }
 }
-
-#[derive(Debug, FromField)]
-struct Field;

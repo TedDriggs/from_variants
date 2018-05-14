@@ -1,5 +1,8 @@
 # Change Log
 
+## 0.4.0 (May 14, 2018)
+- Update dependencies on `syn`, `quote`, `darling`, and `error-chain` to their latest versions.
+
 ## 0.3.0 (April 5, 2018)
 - Update dependencies on `syn`, `quote`, and `darling` to their latest versions.
 
