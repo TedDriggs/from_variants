@@ -1,8 +1,11 @@
-use darling::ast::{Data, Style, Fields};
-use darling::util::Ignored;
-use syn;
+use darling::{
+    ast::{Data, Style, Fields},
+    util::Ignored,
+    FromDeriveInput,
+    FromVariant,
+};
 
-use from_impl::FromImpl;
+use crate::from_impl::FromImpl;
 
 /// A parsing context which houses information read from the input until it
 /// can be used to construct the appropriate token stream.

@@ -6,6 +6,7 @@ repository = "https://github.com/TedDriggs/from_variants"
 documentation = "https://docs.rs/from_variants/0.4.0"
 license = "MIT/Apache-2.0"
 description = "Internal helper crate for from_variants crate."
+edition = "2018"
 
 [lib]
 proc-macro = true

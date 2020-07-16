@@ -1,5 +1,5 @@
-use syn;
-use quote::{ToTokens, Tokens};
+use syn::parse_quote;
+use quote::{ToTokens, Tokens, *};
 
 /// The generic type parameter used when `into` conversions are requested.
 const INTO_GENERIC: &'static str = "INTO";
@@ -84,7 +84,8 @@ macro_rules! default_from_impl {
 
 #[cfg(test)]
 mod tests {
-    use syn;
+    use syn::parse_quote;
+    use quote::*;
     use super::FromImpl;
 
     #[test]

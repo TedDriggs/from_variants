@@ -8,6 +8,7 @@ license = "MIT/Apache-2.0"
 categories = ["development-tools", "rust-patterns"]
 description = "Rust macro to automatically generate conversions for newtype enums."
 readme = "README.md"
+edition = "2018"
 
 [badges]
 travis-ci = { repository = "TedDriggs/from_variants" }

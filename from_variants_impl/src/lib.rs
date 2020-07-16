@@ -1,33 +1,14 @@
-#![crate_type = "proc-macro"]
-
-#[macro_use]
-extern crate darling;
-
-#[macro_use]
-extern crate error_chain;
-
-#[cfg(test)]
-#[macro_use]
-extern crate pretty_assertions;
-
-extern crate proc_macro;
-
-#[macro_use]
-extern crate syn;
-
-#[macro_use]
-extern crate quote;
-
 mod errors;
 mod from_impl;
 mod parser;
 
 mod prelude {
-    pub use errors::{Error, ErrorKind, Result, ResultExt};
+    pub use crate::errors::{Error, ErrorKind, Result, ResultExt};
 }
 
 use darling::FromDeriveInput;
 use proc_macro::TokenStream;
+use quote::*; // TODO: upgrate quote version because it requires all macros in scope
 use prelude::*;
 
 #[doc(hidden)]
