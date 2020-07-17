@@ -41,6 +41,7 @@
 //! * **Conversion opt-in**: Use `#[from_variants(into)]` on an enum or variant to generate conversions
 //!   that will automatically convert - for example, accepting a `&str` for a `String` variant.
 //!   This must be used sparingly to avoid generating conflicting impls.
+//! * **no_std support**: Generated conversions do not depend on the standard library.
 #[allow(unused_imports)]
 pub use from_variants_impl::*;
 
