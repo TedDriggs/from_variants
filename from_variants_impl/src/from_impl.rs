@@ -1,5 +1,6 @@
 use syn::parse_quote;
-use quote::{ToTokens, Tokens, *};
+use quote::{ToTokens, quote};
+use proc_macro2::{Span, TokenStream};
 
 /// The generic type parameter used when `into` conversions are requested.
 const INTO_GENERIC: &'static str = "INTO";
@@ -25,7 +26,7 @@ pub struct FromImpl<'a> {
 }
 
 impl<'a> ToTokens for FromImpl<'a> {
-    fn to_tokens(&self, tokens: &mut Tokens) {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
         let target_ident = &self.target_ident;
         let variant_ident = &self.variant_ident;
         let variant_ty = &self.variant_ty;
@@ -36,9 +37,9 @@ impl<'a> ToTokens for FromImpl<'a> {
             let mut altered_generics: syn::Generics = self.generics.clone();
             altered_generics.params.push(syn::GenericParam::Type(generate_into_ty_param(variant_ty)));
             let (i, _, _) = altered_generics.split_for_impl();
-            let into_variant = syn::Ident::from(INTO_GENERIC);
+            let into_variant = syn::Ident::new(INTO_GENERIC, Span::call_site());
 
-            tokens.append_all(quote!(
+            tokens.extend(quote!(
                 #[doc = #doc_comment]
                 impl #i ::from_variants::export::From<#into_variant> for #target_ident #ty_generics
                     #where_clause {
@@ -48,7 +49,7 @@ impl<'a> ToTokens for FromImpl<'a> {
                 }
             ))
         } else {
-            tokens.append_all(quote!(
+            tokens.extend(quote!(
                 #[doc = #doc_comment]
                 impl #impl_generics ::from_variants::export::From<#variant_ty> for #target_ident #ty_generics
                     #where_clause {
@@ -62,7 +63,7 @@ impl<'a> ToTokens for FromImpl<'a> {
 }
 
 fn generate_into_ty_param(variant_ty: &syn::Type) -> syn::TypeParam {
-    let into = syn::Ident::from(INTO_GENERIC);
+    let into = syn::Ident::new(INTO_GENERIC, Span::call_site());
     parse_quote!(#into: ::from_variants::export::Into<#variant_ty>)
 }
 
@@ -70,12 +71,11 @@ fn generate_into_ty_param(variant_ty: &syn::Type) -> syn::TypeParam {
 macro_rules! default_from_impl {
     () => (
         {
-            use syn;
             FromImpl {
                 generics: &Default::default(),
-                target_ident: &syn::Ident::from("Foo"),
-                variant_ident: &syn::Ident::from("Bar"),
-                variant_ty: &syn::Type::Path(parse_quote!(String)),
+                target_ident: &syn::Ident::new("Foo", proc_macro2::Span::call_site()),
+                variant_ident: &syn::Ident::new("Bar", proc_macro2::Span::call_site()),
+                variant_ty: &syn::Type::Path(syn::parse_quote!(String)),
                 into: false,
             }
         }
@@ -86,12 +86,17 @@ macro_rules! default_from_impl {
 mod tests {
     use syn::parse_quote;
     use quote::*;
+    use pretty_assertions::{assert_eq};
     use super::FromImpl;
+
+    fn assert_generates(actual: FromImpl, expected: proc_macro2::TokenStream) {
+        assert_eq!(actual.into_token_stream().to_string(), expected.to_string());
+    }
 
     #[test]
     fn simple() {
         let fi = default_from_impl!();
-        assert_eq!(quote!(#fi), quote!(
+        assert_generates(fi, quote!(
             #[doc = "Convert into [`Bar`](#variant.Bar) variant."]
             impl ::from_variants::export::From<String> for Foo {
                 fn from(v: String) -> Self {
@@ -112,7 +117,7 @@ mod tests {
         fi.variant_ty = &ty;
         fi.generics = &generics;
 
-        assert_eq!(quote!(#fi), quote!(
+        assert_generates(fi, quote!(
             #[doc = "Convert into [`Bar`](#variant.Bar) variant."]
             impl<'a> ::from_variants::export::From<&'a str> for Foo<'a> {
                 fn from(v: &'a str) -> Self {
@@ -127,7 +132,7 @@ mod tests {
         let mut fi = default_from_impl!();
         fi.into = true;
 
-        assert_eq!(quote!(#fi), quote!(
+        assert_generates(fi, quote!(
             #[doc = "Convert into [`Bar`](#variant.Bar) variant."]
             impl<INTO: ::from_variants::export::Into<String> > ::from_variants::export::From<INTO> for Foo {
                 fn from(v: INTO) -> Self {
@@ -147,7 +152,7 @@ mod tests {
         fi.generics = &generics;
         fi.into = true;
 
-        assert_eq!(quote!(#fi), quote!(
+        assert_generates(fi, quote!(
             #[doc = "Convert into [`Bar`](#variant.Bar) variant."]
             impl<T, INTO: ::from_variants::export::Into<Vec<T> > > ::from_variants::export::From<INTO> for Foo<T> {
                 fn from(v: INTO) -> Self {
