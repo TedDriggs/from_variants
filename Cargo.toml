@@ -14,7 +14,7 @@ edition = "2018"
 travis-ci = { repository = "TedDriggs/from_variants" }
 
 [dependencies]
-from_variants_impl = { version = "=0.4.0", path = "from_variants_impl" }
+from_variants_impl = { version = "=0.5.0", path = "from_variants_impl" }
 
 [workspace]
 members = ["from_variants_impl"]
