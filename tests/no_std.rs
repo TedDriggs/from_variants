@@ -1,8 +1,7 @@
 //! Compile and correctness test for using `core` instead of `std`.
 #![no_std]
 
-#[macro_use]
-extern crate from_variants;
+use from_variants::FromVariants;
 
 #[derive(Debug, PartialEq, Eq, FromVariants)]
 pub enum Lorem {

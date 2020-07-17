@@ -1,5 +1,4 @@
-#[macro_use]
-extern crate from_variants;
+use from_variants::FromVariants;
 
 #[derive(Debug, PartialEq, Eq, FromVariants)]
 pub enum Demo<T> {

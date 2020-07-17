@@ -3,13 +3,12 @@
 # Newtype Variant Conversions
 Rust macro crate to automatically generate conversions from variant types into the target enum.
 
-This crate requires Rust 1.15 or above to compile on stable.
+This crate requires Rust 1.45 or above to compile on stable.
 
 ## Examples
 
 ```rust
-#[macro_use]
-extern crate from_variants;
+use from_variants::FromVariants;
 
 #[derive(Debug, Clone, PartialEq, Eq, FromVariants)]
 pub enum Lorem {
@@ -25,13 +24,12 @@ fn main() {
 You can skip variants to avoid type collisions:
 
 ```rust
-#[macro_use]
-extern crate from_variants;
+use from_variants::FromVariants;
 
 #[derive(Debug, Clone, PartialEq, Eq, FromVariants)]
 pub enum Ipsum {
     Hello(String),
-    
+
     #[from_variants(skip)]
     Goodbye(String),
 }
@@ -44,5 +42,7 @@ fn main() {
 ## Features
 
 * **Variant opt-out**: To skip a variant, add `#[from_variants(skip)]` to that variant.
-* **Conversion support**: Use `#[from_variants(into)]` at the enum or variant level to get a generated conversion that accepts `Into<VariantType>`. In practice, this will only work with types defined in the same crate; otherwise you'll get conflicting impl errors.
+* **Conversion opt-in**: Use `#[from_variants(into)]` on an enum or variant to generate conversions
+  that will automatically convert - for example, accepting a `&str` for a `String` variant.
+  This must be used sparingly to avoid generating conflicting impls.
 * **no_std support**: Generated conversions do not depend on the standard library.

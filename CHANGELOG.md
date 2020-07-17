@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.5.0 (July 17, 2020)
+- Change minimum Rust version from 1.15 to 1.45
+- Update Rust to `edition = "2018"`.
+- Update dependencies on `syn`, `quote`, `darling` to their latest versions.
+- Drop `error-chain` dependency.
+
 ## 0.4.0 (May 14, 2018)
 - Update dependencies on `syn`, `quote`, `darling`, and `error-chain` to their latest versions.
 
