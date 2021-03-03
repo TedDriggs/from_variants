@@ -13,9 +13,7 @@
 //!     Num(u16),
 //! }
 //!
-//! fn main() {
-//!     assert_eq!(Lorem::Num(10), Lorem::from(10));
-//! }
+//! assert_eq!(Lorem::Num(10), Lorem::from(10));
 //! ```
 //!
 //! You can skip variants to avoid type collisions:
@@ -31,9 +29,7 @@
 //!     Goodbye(String),
 //! }
 //!
-//! fn main() {
-//!     assert_eq!(Ipsum::Hello("John".to_string()), Ipsum::from("John".to_string()));
-//! }
+//! assert_eq!(Ipsum::Hello("John".to_string()), Ipsum::from("John".to_string()));
 //! ```
 //!
 //! # Features
