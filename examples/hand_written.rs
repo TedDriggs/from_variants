@@ -19,9 +19,9 @@ impl From<u16> for Lorem {
     }
 }
 
-pub enum Ipsum<'a, T : 'a> {
+pub enum Ipsum<'a, T: 'a> {
     Str(String),
-    Tbd(&'a T)
+    Tbd(&'a T),
 }
 
 /// Convert into [`Str`](#variant.Str) variant.
@@ -38,6 +38,4 @@ impl<'a, T: 'a> From<&'a T> for Ipsum<'a, T> {
     }
 }
 
-pub fn main() {
-    
-}
+pub fn main() {}

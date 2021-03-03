@@ -10,7 +10,7 @@ pub enum Lorem {
     /// Hello world
     #[from_variants(skip)]
     Str(String),
-    
+
     /// Hello world
     Num(u16),
 }

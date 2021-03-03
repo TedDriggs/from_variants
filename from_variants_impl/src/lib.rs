@@ -20,10 +20,3 @@ fn build_converters(ast: syn::DeriveInput) -> Result<TokenStream> {
     let bodies = context.as_impls();
     Ok(quote!(#(#bodies)*).into())
 }
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-    }
-}

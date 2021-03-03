@@ -1,8 +1,7 @@
 use darling::{
-    ast::{Data, Style, Fields},
+    ast::{Data, Fields, Style},
     util::Ignored,
-    FromDeriveInput,
-    FromVariant,
+    FromDeriveInput, FromVariant,
 };
 
 use crate::from_impl::FromImpl;
@@ -26,15 +25,17 @@ impl Container {
     /// Generates a list of `From` implementations.
     pub fn as_impls<'a>(&'a self) -> Vec<FromImpl<'a>> {
         if let Some(variants) = self.data.as_ref().take_enum() {
-            variants.into_iter().filter(|v| v.is_enabled()).map(|item| {
-                FromImpl {
+            variants
+                .into_iter()
+                .filter(|v| v.is_enabled())
+                .map(|item| FromImpl {
                     generics: &self.generics,
                     variant_ident: &item.ident,
                     variant_ty: item.ty().unwrap(),
                     target_ident: &self.ident,
                     into: item.into.unwrap_or(self.into),
-                }
-            }).collect()
+                })
+                .collect()
         } else {
             panic!("FromVariants is not supported on structs");
         }
@@ -76,7 +77,12 @@ impl Variant {
     }
 
     pub fn ty(&self) -> Option<&syn::Type> {
-        if let Fields { style: Style::Tuple, ref fields, .. } = self.fields {
+        if let Fields {
+            style: Style::Tuple,
+            ref fields,
+            ..
+        } = self.fields
+        {
             fields.get(0)
         } else {
             None
@@ -93,7 +99,7 @@ impl From<syn::Ident> for Variant {
             fields: Fields {
                 style: Style::Unit,
                 fields: Vec::new(),
-            }
+            },
         }
     }
 }

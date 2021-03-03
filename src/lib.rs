@@ -42,6 +42,9 @@
 //!   that will automatically convert - for example, accepting a `&str` for a `String` variant.
 //!   This must be used sparingly to avoid generating conflicting impls.
 //! * **no_std support**: Generated conversions do not depend on the standard library.
+
+#![no_std]
+
 #[allow(unused_imports)]
 pub use from_variants_impl::*;
 
