@@ -23,7 +23,7 @@ pub struct Container {
 
 impl Container {
     /// Generates a list of `From` implementations.
-    pub fn as_impls<'a>(&'a self) -> Vec<FromImpl<'a>> {
+    pub fn as_impls(&self) -> Vec<FromImpl<'_>> {
         if let Some(variants) = self.data.as_ref().take_enum() {
             variants
                 .into_iter()
