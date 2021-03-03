@@ -1,7 +1,7 @@
 use darling::{
     ast::{Data, Fields, Style},
     util::Ignored,
-    FromDeriveInput, FromVariant,
+    FromDeriveInput, FromVariant, Result,
 };
 
 use crate::from_impl::FromImpl;
@@ -22,23 +22,39 @@ pub struct Container {
 }
 
 impl Container {
+    pub fn validate(self) -> Result<Self> {
+        let variant_errors = self
+            .data
+            .as_ref()
+            .take_enum()
+            .expect("FromVariants is not valid on structs")
+            .into_iter()
+            .filter_map(|v| v.validate().err())
+            .collect::<Vec<_>>();
+
+        if !variant_errors.is_empty() {
+            return Err(darling::Error::multiple(variant_errors));
+        }
+
+        Ok(self)
+    }
+
     /// Generates a list of `From` implementations.
     pub fn as_impls(&self) -> Vec<FromImpl<'_>> {
-        if let Some(variants) = self.data.as_ref().take_enum() {
-            variants
-                .into_iter()
-                .filter(|v| v.is_enabled())
-                .map(|item| FromImpl {
-                    generics: &self.generics,
-                    variant_ident: &item.ident,
-                    variant_ty: item.ty().unwrap(),
-                    target_ident: &self.ident,
-                    into: item.into.unwrap_or(self.into),
-                })
-                .collect()
-        } else {
-            panic!("FromVariants is not supported on structs");
-        }
+        self.data
+            .as_ref()
+            .take_enum()
+            .expect("FromVariants is not valid on structs")
+            .into_iter()
+            .filter(|v| v.is_enabled())
+            .map(|item| FromImpl {
+                generics: &self.generics,
+                variant_ident: &item.ident,
+                variant_ty: item.ty().unwrap(),
+                target_ident: &self.ident,
+                into: item.into.unwrap_or(self.into),
+            })
+            .collect()
     }
 }
 
@@ -54,7 +70,7 @@ impl From<syn::Ident> for Container {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, FromVariant)]
-#[darling(from_ident, attributes(from_variants), map = "Self::validate")]
+#[darling(from_ident, attributes(from_variants))]
 pub struct Variant {
     ident: syn::Ident,
     skip: Option<bool>,
@@ -63,12 +79,12 @@ pub struct Variant {
 }
 
 impl Variant {
-    fn validate(self) -> Self {
+    fn validate(&self) -> Result<()> {
         if self.is_enabled() && !self.fields.is_newtype() {
-            panic!("Variants must be newtype or unit");
+            Err(darling::Error::custom(format!("FromVariants only supports newtype variants; other variants must be skipped with `#[from_variants(skip)]`")).with_span(&self.ident))
+        } else {
+            Ok(())
         }
-
-        self
     }
 
     /// Check if this variant will emit a converter.
