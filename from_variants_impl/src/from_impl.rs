@@ -84,7 +84,6 @@ macro_rules! default_from_impl {
 // rustfmt changes the contents of the quote! macro in a way that causes tests to fail,
 // so rustfmt is disabled for the unit tests.
 #[cfg(test)]
-#[rustfmt::skip]
 mod tests {
     use super::FromImpl;
     use pretty_assertions::assert_eq;
@@ -144,7 +143,7 @@ mod tests {
             fi,
             quote!(
                 #[doc = "Convert into [`Bar`](#variant.Bar) variant."]
-                impl<INTO: ::from_variants::export::Into<String> >
+                impl<INTO: ::from_variants::export::Into<String>>
                     ::from_variants::export::From<INTO> for Foo
                 {
                     fn from(v: INTO) -> Self {
@@ -169,7 +168,7 @@ mod tests {
             fi,
             quote!(
                 #[doc = "Convert into [`Bar`](#variant.Bar) variant."]
-                impl<T, INTO: ::from_variants::export::Into<Vec<T> > >
+                impl<T, INTO: ::from_variants::export::Into<Vec<T>>>
                     ::from_variants::export::From<INTO> for Foo<T>
                 {
                     fn from(v: INTO) -> Self {

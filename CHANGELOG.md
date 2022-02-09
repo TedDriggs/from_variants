@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.7.0 (February 9, 2022)
+
+- Change minimum Rust version from 1.45 to 1.56
+- Update to Rust `edition = "2021"`.
+- Update dependencies on `darling` to their latest versions.
+
 ## 0.6.0 (March 3, 2021)
 
 - Add `#![no_std]` to `from_variants` so the crate works on `no_std` targets.

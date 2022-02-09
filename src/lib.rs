@@ -1,6 +1,6 @@
 //! Rust macro crate to automatically generate conversions from variant types into the target enum.
 //!
-//! This crate requires Rust 1.45 or above to compile on stable.
+//! This crate requires Rust 1.56 or above to compile on stable.
 //!
 //! # Examples
 //!
