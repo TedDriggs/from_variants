@@ -1,6 +1,6 @@
 # Change Log
 
-## 0.6.1 (February 14, 2022)
+## 1.0.0 (February 18, 2022)
 
 - Update dependency on `darling` to its latest version.
 

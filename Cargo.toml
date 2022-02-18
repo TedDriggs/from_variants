@@ -1,6 +1,6 @@
 [package]
 name = "from_variants"
-version = "0.6.1"
+version = "1.0.0"
 authors = ["Ted Driggs <ted.driggs@outlook.com>"]
 repository = "https://github.com/TedDriggs/from_variants"
 license = "MIT/Apache-2.0"
@@ -10,7 +10,7 @@ readme = "README.md"
 edition = "2018"
 
 [dependencies]
-from_variants_impl = { version = "=0.6.1", path = "from_variants_impl" }
+from_variants_impl = { version = "=1.0.0", path = "from_variants_impl" }
 
 [workspace]
 members = ["from_variants_impl"]
