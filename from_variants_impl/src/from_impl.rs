@@ -89,7 +89,7 @@ macro_rules! default_from_impl {
 // brackets in `quote!` to match the output of macro under test, but `rustfmt`
 // doesn't care about spacing in macros too much.
 #[cfg(test)]
-#[rustfmt(skip)]
+#[rustfmt::skip]
 mod tests {
     use super::FromImpl;
     use pretty_assertions::assert_eq;
