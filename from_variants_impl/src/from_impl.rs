@@ -83,6 +83,11 @@ macro_rules! default_from_impl {
 
 // rustfmt changes the contents of the quote! macro in a way that causes tests to fail,
 // so rustfmt is disabled for the unit tests.
+// Because we are comparing the output of our macro with the token stream,
+// the spacing between angle brackets matters. Their `Punct` tokens preserve
+// spacing, so we have to arrange the angle brackets in `quote!` to match the
+// output of macro under test, but `rustfmt` doesn't care about spacing in macros
+// too much and tries to change it.
 #[cfg(test)]
 #[rustfmt::skip]
 mod tests {

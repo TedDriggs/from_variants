@@ -96,10 +96,7 @@ impl From<syn::Ident> for Variant {
             ident,
             skip: Default::default(),
             into: Default::default(),
-            fields: Fields {
-                style: Style::Unit,
-                fields: Vec::new(),
-            },
+            fields: Fields::new(Style::Unit, Vec::new()),
         }
     }
 }

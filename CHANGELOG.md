@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.0.0 (February 18, 2022)
+
+- Update dependency on `darling` to its latest version.
+
 ## 0.6.0 (March 3, 2021)
 
 - Add `#![no_std]` to `from_variants` so the crate works on `no_std` targets.
