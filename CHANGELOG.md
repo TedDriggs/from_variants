@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.0.1 (January 3, 2023)
+
+- Don't panic on tuple variants. [#9](https://github.com/TedDriggs/from_variants/issues/9)
+
 ## 1.0.0 (February 18, 2022)
 
 - Update dependency on `darling` to its latest version.

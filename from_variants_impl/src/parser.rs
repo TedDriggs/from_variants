@@ -31,7 +31,7 @@ impl Container {
                 .map(|item| FromImpl {
                     generics: &self.generics,
                     variant_ident: &item.ident,
-                    variant_ty: item.ty().unwrap(),
+                    variant_ty: item.ty().expect("Shape validation already took place"),
                     target_ident: &self.ident,
                     into: item.into.unwrap_or(self.into),
                 })
@@ -54,7 +54,7 @@ impl From<syn::Ident> for Container {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, FromVariant)]
-#[darling(from_ident, attributes(from_variants), map = "Self::validate")]
+#[darling(from_ident, attributes(from_variants), and_then = "Self::validate")]
 pub struct Variant {
     ident: syn::Ident,
     skip: Option<bool>,
@@ -63,12 +63,21 @@ pub struct Variant {
 }
 
 impl Variant {
-    fn validate(self) -> Self {
+    fn validate(self) -> darling::Result<Self> {
         if self.is_enabled() && !self.fields.is_newtype() {
-            panic!("Variants must be newtype or unit");
+            let shape = if self.fields.is_tuple() {
+                "tuple"
+            } else if self.fields.is_struct() {
+                "struct"
+            } else if self.fields.is_unit() {
+                "unit"
+            } else {
+                "unknown"
+            };
+            Err(darling::Error::unsupported_shape(shape).with_span(&self.fields))
+        } else {
+            Ok(self)
         }
-
-        self
     }
 
     /// Check if this variant will emit a converter.
